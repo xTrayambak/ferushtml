@@ -11,6 +11,7 @@ type
     tag*: string
     textContent*: string
     attributes*: seq[Attribute]
+    parent*: HTMLElement
     children*: seq[HTMLElement]
 
 #[
@@ -33,7 +34,8 @@ proc push*(parent: HTMLElement, child: HTMLElement) =
 proc newHTMLElement*(tag: string, 
                      elemTextContent: string, 
                      attributes: seq[Attribute], 
-                     children: seq[HTMLElement]): HTMLElement =
+                     children: seq[HTMLElement],
+                     parent: HTMLElement = HTMLElement(tag: "", textContent: "", attributes: @[], children: @[])): HTMLElement =
   HTMLElement(tag: tag, 
               textContent: elemTextContent, 
               attributes: attributes, children: children)

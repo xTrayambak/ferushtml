@@ -2,36 +2,19 @@ import unittest
 
 import ferushtml
 
-var html = newHTMLElement("html", "", @[], @[])
-html.push(
-  newHTMLElement(
-    "head", "", @[], @[
-      newHTMLElement("title", "Hello ferushtml", @[], @[])
-    ]
-  )
-)
-html.push(
-  newHTMLElement(
-    "body", "", @[], @[
-      newHTMLElement("p1", "Does parenting work?", @[], @[])
-    ]
-  )
-)
-html.push(
-  newHTMLElement(
-    "thisisntreal", "", @[], @[
-      newHTMLElement("p1", "OBAMA GRILLED CHEESE SANDWICH!!!!", @[], @[
-        newHTMLElement("p2", "IS THE ONE PIECE REAL!?", @[], @[])
-      ])
-    ]
-  )
-)
-html.push(
-  newHTMLElement(
-    "thisisntrealeither", "", @[], @[
-      newHTMLElement("p420", "(breakn bd refrenc)", @[], @[])
-    ]
-  )
-)
+let x = """
+<html>
+  <head>
+    <title>Hello Ferus</title>
+  </head>
+  <body>
+    <p1>Hello World</p1>
+    <footer>This is truly one of the footers ever</footer>
+  </body>
+</html>
+"""
 
-echo html.dump()
+var p = newHTMLParser()
+let y = p.parse(x)
+
+echo y.dump()

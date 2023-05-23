@@ -21,8 +21,9 @@ proc dump*(elem: HTMLElement,
   let elemInfo = fmt"[tag: {elem.tag}; numchildren: {elem.children.len}; textContent: {textContent}]"
   var tabs = ""
 
-  for _ in 0..rounds:
-    tabs = tabs & "\t"
+  for x in 0..rounds:
+    if x != 0:
+      tabs = tabs & "\t"
 
   str = str & tabs & elemInfo & "\n"
   
