@@ -1,4 +1,3 @@
-import html/[element, attribute, dump]
-import html/parser/parser
+import html/[element, attribute, dump, parser/parser]
 
-export element, attribute, dump, parser/parser
+export element, attribute, dump, parser
