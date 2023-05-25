@@ -2,7 +2,7 @@
   Finite state machine based HTML parser
 ]#
 
-import ../element
+import ../element, ../document
 
 type 
   HTMLParserState* = enum
@@ -20,7 +20,7 @@ type
 proc isWhitespace*(c: char): bool {.inline.} =
   c == ' '
 
-proc parse*(parser: HTMLParser, input: string): HTMLElement =
+proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
   var
     lastParent = newHTMLElement("root", "", @[], @[])
     tagName: string = ""
@@ -28,38 +28,37 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
     index: int = -1
 
   for c in input:
-    # Consume whitespace.
-    #[if isWhitespace(c):
-      continue
-    ]#
     inc index
 
     # Comment handler
-    if parser.state == HTMLParserState.psComment:
+    if parser.state == psComment:
       if c == '-':
         if index + 1 < input.len and index + 2 < input.len:
           if input[index + 1] == '-' and input[index + 2] == '>':
-            # Comment end! We now pretend that a tag has just ended.
-            parser.state = HTMLParserState.psEndTag
+            # Comment end!
+            parser.state = psInit
             continue
+
+      continue
 
     if c == '<':
       # Code to handle comments. They're just discarded by the parser.
-      #   !                                 -                     -
       if index + 1 < input.len and index + 2 < input.len and index + 3 < input.len:
-        if input[index + 1] == '!' and input[index + 2] == '-' and input[index + 3] == '-':
+        if input[index + 1] == '!' and 
+          input[index + 2] == '-' and 
+          input[index + 3] == '-':
           # Comment detected!
-          parser.state = HTMLParserState.psComment
+          parser.state = psComment
           continue
-        
-      parser.state = HTMLParserState.psStartTag
-    elif parser.state == HTMLParserState.psStartTag:
+ 
+      parser.state = psStartTag
+    elif parser.state == psStartTag:
       if c == '/':
         parser.state = HTMLParserState.psBeginClosingTag
       else:
         parser.state = HTMLParserState.psReadingTag
         tagName = tagName & c
-    elif parser.state == HTMLParserState.psReadingTag:
+    elif parser.state == psReadingTag:
       if isWhitespace(c):
         parser.state = HTMLParserState.psReadingAttributes
       elif c == '>':
@@ -73,7 +72,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
         lastParent = parent
       else:
         tagName = tagName & c
-    elif parser.state == HTMLParserState.psReadingAttributes:
+    elif parser.state == psReadingAttributes:
       if c == '>':
         parser.state = HTMLParserState.psEndTag
 
@@ -82,14 +81,17 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
         lastParent.push(parent)
         lastParent = parent
-    elif parser.state == HTMLParserState.psEndTag:
+    elif parser.state == psEndTag:
       lastParent.textContent = lastParent.textContent & c
       tagName.reset()
-    elif parser.state == HTMLParserState.psBeginClosingTag:
+    elif parser.state == psBeginClosingTag:
       if c == '>':
         lastParent = lastParent.parent
 
   lastParent
 
-proc newHTMLParser*: HTMLParser =
+proc parseToDocument*(parser: HTMLParser, input: string): Document {.inline.} =
+  newDocument(parser.parse(input))
+
+proc newHTMLParser*: HTMLParser {.inline.} =
   HTMLParser(state: HTMLParserState.psInit)

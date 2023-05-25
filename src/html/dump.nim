@@ -1,4 +1,4 @@
-import element, strutils, strformat
+import element, document, strutils, strformat
 
 #[
   Dump an element and it's children, and their children, and their children's children, and their children's childr-Maximum recursion depth reached.
@@ -36,10 +36,13 @@ proc dump*(elem: HTMLElement,
 
   str
 
+proc dump*(document: Document): string {.inline.} =
+  dump(document.root)
+
 #[
   Handy macro for printing an element dump into stdout
 
   !!elem => entire dump of the element, printing into stdout
 ]#
-proc `!!`(elem: HTMLElement) =
+proc `!!`(elem: HTMLElement) {.inline.} =
   echo dump(elem)
