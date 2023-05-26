@@ -2,7 +2,7 @@
   Finite state machine based HTML parser
 ]#
 
-import ../element, ../document
+import ../element, ../document, ../attribute, ../../butterfly
 
 type 
   HTMLParserState* = enum
@@ -24,6 +24,13 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
   var
     lastParent = newHTMLElement("root", "", @[], @[])
     tagName: string = ""
+
+    currentAttrName: string
+    currentAttrNameDone: bool = false
+    currentAttrRawValue: string
+    currentAttrRawValueDone: bool = false
+
+    attributes: seq[Attribute]
 
     index: int = -1
 
@@ -50,7 +57,6 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
           # Comment detected!
           parser.state = psComment
           continue
- 
       parser.state = psStartTag
     elif parser.state == psStartTag:
       if c == '/':
@@ -66,21 +72,51 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
         parser.state = HTMLParserState.psEndTag
         
         # Construct the new element itself.
-        var parent = newHTMLElement(tagName, "", @[], @[])
+        var parent = newHTMLElement(tagName, "", attributes, @[])
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
+      elif isWhitespace(c):
+        # Attribute parsing
+        parser.state = psReadingAttributes
       else:
         tagName = tagName & c
     elif parser.state == psReadingAttributes:
       if c == '>':
-        parser.state = HTMLParserState.psEndTag
+        currentAttrRawValueDone = true
+        currentAttrNameDone = true
+        parser.state = psEndTag
 
-        var parent = newHTMLElement(tagName, "", @[], @[])
+        var parent = newHTMLElement(tagName, "", attributes, @[])
         parent.parent = lastParent
 
         lastParent.push(parent)
         lastParent = parent
+      else:
+        # Parse attribute name
+        if not currentAttrNameDone:
+          if c == '=':
+            currentAttrNameDone = true
+            continue
+
+          currentAttrName = currentAttrName & c
+        else:
+          # Parse attribute value
+          if not currentAttrRawValueDone:
+            if not isWhitespace(c) and c != '<':
+              currentAttrRawValue = currentAttrRawValue & c
+            else:
+              currentAttrRawValueDone = true
+
+              echo currentAttrName
+              echo currentAttrRawValue
+              var bVal = newButterfly("s[" & currentAttrRawValue & "]")
+              attributes.add(newAttribute(
+                currentAttrName, bVal
+              ))
+              currentAttrName.reset()
+              currentAttrRawValue.reset()
+
     elif parser.state == psEndTag:
       lastParent.textContent = lastParent.textContent & c
       tagName.reset()

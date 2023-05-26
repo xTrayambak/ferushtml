@@ -8,7 +8,7 @@ let x = """
     <!--This is a test comment-->
     <title>Hello Ferus</title>
   </head>
-  <body>
+  <body background-color="blue">
     <!--This is yet another cheeky comment-->
     <p1>Hello World</p1>
     <footer>This is truly one of the footers ever</footer>

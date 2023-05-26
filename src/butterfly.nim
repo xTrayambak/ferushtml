@@ -137,12 +137,13 @@ type
   Butterfly* = ref object of RootObj
     butterType*: ButterflyType
     payload*: string
+    fastStrPath*: string
     quality*: ButterflyQuality
 
 #[
   Process an int out of a butterfly
 ]#
-proc processInt*(butterfly: Butterfly): int =
+proc processInt*(butterfly: Butterfly): int {.inline.} =
   if butterfly.butterType != ButterflyType.btInt:
     raise newException(ValueError, "Attempt to process int out of a non-int butterfly")
 
@@ -151,7 +152,7 @@ proc processInt*(butterfly: Butterfly): int =
 #[
   Process a boolean out of a butterfly
 ]#
-proc processBool*(butterfly: Butterfly): bool =
+proc processBool*(butterfly: Butterfly): bool {.inline.} =
   if butterfly.butterType != ButterflyType.btBool:
     raise newException(ValueError, "[src/butterfly.nim] Attempt to process bool out of a non-bool butterfly")
 
@@ -160,7 +161,7 @@ proc processBool*(butterfly: Butterfly): bool =
 #[
   Process a character out of a butterfly
 ]#
-proc processChar*(butterfly: Butterfly): char =
+proc processChar*(butterfly: Butterfly): char {.inline.} =
   if butterfly.butterType != ButterflyType.btChar:
     raise newException(ValueError, "Attempt to process char out of a non-char butterfly")
 
@@ -169,7 +170,7 @@ proc processChar*(butterfly: Butterfly): char =
 #[
   Process a float out of a butterfly
 ]#
-proc processFloat*(butterfly: Butterfly): float =
+proc processFloat*(butterfly: Butterfly): float {.inline.} =
   if butterfly.butterType != ButterflyType.btFloat:
     raise newException(ValueError, "Attempt to process float out of a non-float butterfly")
 
@@ -178,7 +179,7 @@ proc processFloat*(butterfly: Butterfly): float =
 #[
   Instantiate a new Butterfly object.
 ]#
-proc newButterfly*(data: string): Butterfly =
+proc newButterfly*(data: string): Butterfly {.inline.} =
   if data.len < 1:
     raise newException(ValueError, "Butterfly payload can not be empty")
 
@@ -211,4 +212,4 @@ proc newButterfly*(data: string): Butterfly =
   else:
     raise newException(ValueError, "[src/butterfly.nim] Invalid payload! Terminating!")
 
-  Butterfly(payload: payload, butterType: bType, quality: ButterflyQuality.bqGood)
+  Butterfly(fastStrPath: data, payload: payload, butterType: bType, quality: ButterflyQuality.bqGood)
