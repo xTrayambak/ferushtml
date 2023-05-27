@@ -1,5 +1,7 @@
 import ferushtml, times, os, strutils, math
 
+var verbose: bool
+
 if paramCount() < 1:
   echo "Give arguments as to how many times the test should be run!"
   quit 1
@@ -11,6 +13,11 @@ if paramCount() < 2:
 if paramCount() < 3:
   echo "Give test file path!"
   quit 1
+
+if paramCount() < 4:
+  verbose = false
+else:
+  verbose = paramStr(4) == "yes"
 
 let x = paramStr(1)
   .parseInt()
@@ -39,20 +46,22 @@ for _ in 0..x:
   pSpeeds.add(pTimeTaken)
   dSpeeds.add(dTimeTaken)
 
-let pSpeedAvg = (sum(pSpeeds) / dSpeeds.len.float) * 1000
-let dSpeedAvg = (sum(dSpeeds) / dSpeeds.len.float) * 1000
+let pSpeedAvg = (sum(pSpeeds) * 1000) / pSpeeds.len.float
+let dSpeedAvg = (sum(dSpeeds) * 1000) / dSpeeds.len.float
 
 echo "TEST RESULTS\n"
 echo "Rounds used (higher=more accurate): " & $x
-for idx, s in pSpeeds:
-  echo "Parse Round #" & $idx & ": " & $(s*1000) & " ms"
+if verbose:
+  for idx, s in pSpeeds:
+    echo "Parse Round #" & $idx & ": " & $(s*1000) & " ms"
 
 echo "Avg. parse time :   " & $pSpeedAvg & " ms"
-echo "Total parse time:  " & $sum(pSpeeds) & " ms"
+echo "Total parse time:   " & $(sum(pSpeeds)*1000) & " ms\n"
 
 if shouldDump:
-  for idx, d in dSpeeds:
-    echo "Dump Round #" & $idx & ": " & $(d*1000) & " ms"
+  if verbose:
+    for idx, d in dSpeeds:
+      echo "Dump Round #" & $idx & ": " & $(d*1000) & " ms"
 
   echo "Avg. dump time :  " & $dSpeedAvg & " ms"
-  echo "Total dump time: " & $sum(dSpeeds) & " ms"
+  echo "Total dump time: " & $(sum(dSpeeds)*1000) & " ms"
