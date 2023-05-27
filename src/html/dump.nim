@@ -47,8 +47,8 @@ proc nDump(elem: HTMLElement,
   # Now, rinse and repeat! :D
   if elem.children.len > 0:
     for child in elem.children:
-      var cInfo = spawn nDump(child, rounds)
       inc rounds
+      var cInfo = spawn nDump(child, rounds)
       str = str & sync cInfo
       dec rounds
   
