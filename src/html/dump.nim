@@ -47,7 +47,9 @@ proc nDump(elem: HTMLElement,
   # Now, rinse and repeat! :D
   if elem.children.len > 0:
     for child in elem.children:
+      inc rounds
       str = str & nDump(child, rounds)
+      dec rounds
 
   str
 
