@@ -10,4 +10,3 @@ srcDir        = "src"
 # Dependencies
 
 requires "nim >= 1.6.12"
-requires "weave"

@@ -47,22 +47,15 @@ proc nDump(elem: HTMLElement,
   # Now, rinse and repeat! :D
   if elem.children.len > 0:
     for child in elem.children:
-      inc rounds
-      var cInfo = spawn nDump(child, rounds)
-      str = str & sync cInfo
-      dec rounds
-  
+      str = str & nDump(child, rounds)
+
   str
 
 proc dump*(elem: HTMLElement): string {.inline.} =
-  init(Weave)
   result = nDump(elem)
-  exit(Weave)
 
 proc dump*(document: Document): string {.inline.} =
-  init(Weave)
   result = nDump(document.root)
-  exit(Weave)
 
 #[
   Handy macro for printing an element dump into stdout
