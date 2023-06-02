@@ -1,4 +1,4 @@
-import element, ../butterfly, document, strutils, strformat, weave
+import element, ../butterfly, document, strutils, strformat
 
 #[
   Dump all attributes of an element
