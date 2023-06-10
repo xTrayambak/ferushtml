@@ -6,7 +6,7 @@ import element, butterfly, document, strutils, strformat
 proc dumpAttrs(elem: HTMLElement): string {.inline.} =
   var attrInf = ""
   for attr in elem.attributes:
-    attrInf = "* " & attr.name & " = " & attr.value.fastStrPath
+    attrInf = "* " & attr.name & " = " & attr.value.payload
 
   attrInf
 

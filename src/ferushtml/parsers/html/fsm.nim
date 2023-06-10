@@ -103,13 +103,13 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
         lastParent.push(parent)
         lastParent = parent
+        attributes.reset()
       else:
         # Parse attribute name
         if not currentAttrNameDone:
           if c == '=':
             # We've parsed the attribute name, moving on to the attribute value
             currentAttrNameDone = true
-            echo currentAttrName
             continue
 
           currentAttrName = currentAttrName & c
@@ -130,6 +130,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
                 # Move onto the next attribute or end parsing attributes
                 currentAttrName.reset()
                 currentAttrRawValue.reset()
+                attributes.reset()
               else:
                 if c == '>':
                   # No more attribute parsing, just move onto the text content

@@ -100,6 +100,7 @@ type
     btChar,
     btFloat,
     btRgba,
+    btString,
     btNone
   
   #[
@@ -126,7 +127,7 @@ type
   Process an int out of a butterfly
 ]#
 proc processInt*(butterfly: HTMLButterfly): int {.inline.} =
-  if butterfly.butterType != ButterflyType.btInt:
+  if butterfly.butterType != btInt:
     raise newException(ValueError, "Attempt to process int out of a non-int butterfly")
 
   return ferusButterflyInt(butterfly.payload)
@@ -135,7 +136,7 @@ proc processInt*(butterfly: HTMLButterfly): int {.inline.} =
   Process a boolean out of a butterfly
 ]#
 proc processBool*(butterfly: HTMLButterfly): bool {.inline.} =
-  if butterfly.butterType != ButterflyType.btBool:
+  if butterfly.butterType != btBool:
     raise newException(ValueError, "[src/butterfly.nim] Attempt to process bool out of a non-bool butterfly")
 
   return ferusButterflyBool(butterfly.payload)
@@ -144,7 +145,7 @@ proc processBool*(butterfly: HTMLButterfly): bool {.inline.} =
   Process a character out of a butterfly
 ]#
 proc processChar*(butterfly: HTMLButterfly): char {.inline.} =
-  if butterfly.butterType != ButterflyType.btChar:
+  if butterfly.butterType != btChar:
     raise newException(ValueError, "Attempt to process char out of a non-char butterfly")
 
   return ferusButterflyChar(butterfly.payload)
@@ -153,7 +154,7 @@ proc processChar*(butterfly: HTMLButterfly): char {.inline.} =
   Process a float out of a butterfly
 ]#
 proc processFloat*(butterfly: HTMLButterfly): float {.inline.} =
-  if butterfly.butterType != ButterflyType.btFloat:
+  if butterfly.butterType != btFloat:
     raise newException(ValueError, "Attempt to process float out of a non-float butterfly")
 
   return ferusButterflyFloat(butterfly.payload)
@@ -192,4 +193,8 @@ proc newButterfly*(data: string): HTMLButterfly {.inline.} =
   else:
     raise newException(ValueError, "[src/butterfly.nim] Invalid payload! Terminating!")
 
-  HTMLButterfly(fastStrPath: data, payload: payload, butterType: bType, quality: ButterflyQuality.bqGood)
+  HTMLButterfly(fastStrPath: data, 
+    payload: payload, butterType: 
+    bType, 
+    quality: ButterflyQuality.bqGood
+  )
