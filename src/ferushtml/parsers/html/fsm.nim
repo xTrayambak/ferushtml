@@ -2,7 +2,7 @@
   Finite state machine based HTML parser
 ]#
 
-import ../element, ../document, ../attribute, ../butterfly
+import element, document, attribute, butterfly, std/strformat
 
 type 
   HTMLParserState* = enum
@@ -10,7 +10,8 @@ type
     psStartTag,
     psComment,
     psReadingTag,
-    psReadingAttributes,
+    psReadingAttributeName,
+    psReadingAttributeValue,
     psEndTag,
     psBeginClosingTag
 
@@ -58,7 +59,6 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
           parser.state = psComment
           continue
       parser.state = psStartTag
-
     elif parser.state == psStartTag:
       if c == '/':
         parser.state = psBeginClosingTag
@@ -68,7 +68,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
     elif parser.state == psReadingTag:
       if isWhitespace(c):
-        parser.state = psReadingAttributes
+        parser.state = psReadingAttributeName
       elif c == '>':
         # We are now ending the parsing, this element is either fully constructed or malformed.
         parser.state = psEndTag
@@ -78,17 +78,24 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
-      elif isWhitespace(c):
-        # Attribute parsing
-        parser.state = psReadingAttributes
       else:
         tagName = tagName & c
-
-    elif parser.state == psReadingAttributes:
+    elif parser.state == psReadingAttributeName:
       if c == '>':
         # This is the last attribute.
         currentAttrRawValueDone = true
         currentAttrNameDone = true
+
+        attributes.add(
+          newAttribute(
+            currentAttrName,
+            newButterfly(fmt"s[{currentAttrRawValue}]")
+          )
+        )
+
+        currentAttrName.reset()
+        currentAttrRawValue.reset()
+
         parser.state = psEndTag
 
         var parent = newHTMLElement(tagName, "", attributes, @[])
@@ -112,12 +119,9 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
             if not isWhitespace(c) and c != '>':
               currentAttrRawValue = currentAttrRawValue & c
             else:
-              echo "no more value parsing"
               if isWhitespace(c):
                 currentAttrRawValueDone = true
 
-                echo currentAttrName
-                echo currentAttrRawValue
                 var bVal = newButterfly("s[" & currentAttrRawValue & "]")
                 attributes.add(newAttribute(
                   currentAttrName, bVal

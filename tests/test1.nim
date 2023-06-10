@@ -16,8 +16,8 @@ let x = """
 </html>
 """
 
-var p = newHTMLParser(x)
-let y = p.parse()
+var p = newHTMLParser()
+let y = p.parse(x)
 
 echo $typeof y
 
