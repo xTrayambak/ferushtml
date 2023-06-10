@@ -1,7 +1,6 @@
-when defined(ferusHtmlConsumeParser):
-  echo "[ERR] The consume parser is not available yet."
-  quit 0
-else:
+when defined(ferusHtmlFsmParser):
   import fsm
-
   export fsm
+else:
+  import consume
+  export consume

@@ -64,24 +64,6 @@ proc ferusButterflyInt*(data: string): int =
   parseInt(data)
 
 #[
-  Convert some data into rgba form.
-
-  For eg.
-
-  p1 {
-    color: rgba(4.4, 3.2, 5.5, 0.9);
-  }
-
-  where p1[color] = [r: 4.4, g: 3.2, b: 5.5, a: 0.9]
-]#
-#[proc ferusButterflyRgba*(data: string): tuple[r: float, g: float, b: float, a: float] =
-  if data.len < 1:
-
-
-  echo data
-]#
-
-#[
   Convert some data into float form.
 
   For eg.
@@ -134,7 +116,7 @@ type
   #[
     The Butterfly object. This is used to determine the type of an object by representing it in an intermediate representation form.
   ]#
-  Butterfly* = ref object of RootObj
+  HTMLButterfly* = ref object of RootObj
     butterType*: ButterflyType
     payload*: string
     fastStrPath*: string
@@ -143,7 +125,7 @@ type
 #[
   Process an int out of a butterfly
 ]#
-proc processInt*(butterfly: Butterfly): int {.inline.} =
+proc processInt*(butterfly: HTMLButterfly): int {.inline.} =
   if butterfly.butterType != ButterflyType.btInt:
     raise newException(ValueError, "Attempt to process int out of a non-int butterfly")
 
@@ -152,7 +134,7 @@ proc processInt*(butterfly: Butterfly): int {.inline.} =
 #[
   Process a boolean out of a butterfly
 ]#
-proc processBool*(butterfly: Butterfly): bool {.inline.} =
+proc processBool*(butterfly: HTMLButterfly): bool {.inline.} =
   if butterfly.butterType != ButterflyType.btBool:
     raise newException(ValueError, "[src/butterfly.nim] Attempt to process bool out of a non-bool butterfly")
 
@@ -161,7 +143,7 @@ proc processBool*(butterfly: Butterfly): bool {.inline.} =
 #[
   Process a character out of a butterfly
 ]#
-proc processChar*(butterfly: Butterfly): char {.inline.} =
+proc processChar*(butterfly: HTMLButterfly): char {.inline.} =
   if butterfly.butterType != ButterflyType.btChar:
     raise newException(ValueError, "Attempt to process char out of a non-char butterfly")
 
@@ -170,7 +152,7 @@ proc processChar*(butterfly: Butterfly): char {.inline.} =
 #[
   Process a float out of a butterfly
 ]#
-proc processFloat*(butterfly: Butterfly): float {.inline.} =
+proc processFloat*(butterfly: HTMLButterfly): float {.inline.} =
   if butterfly.butterType != ButterflyType.btFloat:
     raise newException(ValueError, "Attempt to process float out of a non-float butterfly")
 
@@ -179,7 +161,7 @@ proc processFloat*(butterfly: Butterfly): float {.inline.} =
 #[
   Instantiate a new Butterfly object.
 ]#
-proc newButterfly*(data: string): Butterfly {.inline.} =
+proc newButterfly*(data: string): HTMLButterfly {.inline.} =
   if data.len < 1:
     raise newException(ValueError, "Butterfly payload can not be empty")
 
@@ -207,9 +189,7 @@ proc newButterfly*(data: string): Butterfly {.inline.} =
     bType = ButterflyType.btBool
   elif data[0] == 'f':
     bType = ButterflyType.btFloat
-  elif data[0] == 'r':
-    bType = ButterflyType.btRgba
   else:
     raise newException(ValueError, "[src/butterfly.nim] Invalid payload! Terminating!")
 
-  Butterfly(fastStrPath: data, payload: payload, butterType: bType, quality: ButterflyQuality.bqGood)
+  HTMLButterfly(fastStrPath: data, payload: payload, butterType: bType, quality: ButterflyQuality.bqGood)

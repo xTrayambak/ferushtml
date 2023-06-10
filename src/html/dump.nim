@@ -1,4 +1,4 @@
-import element, ../butterfly, document, strutils, strformat
+import element, butterfly, document, strutils, strformat
 
 #[
   Dump all attributes of an element
@@ -56,7 +56,7 @@ proc nDump(elem: HTMLElement,
 proc dump*(elem: HTMLElement): string {.inline.} =
   result = nDump(elem)
 
-proc dump*(document: Document): string {.inline.} =
+proc dump*(document: HTMLDocument): string {.inline.} =
   result = nDump(document.root)
 
 #[

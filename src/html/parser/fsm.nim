@@ -2,7 +2,7 @@
   Finite state machine based HTML parser
 ]#
 
-import ../element, ../document, ../attribute, ../../butterfly
+import ../element, ../document, ../attribute, ../butterfly
 
 type 
   HTMLParserState* = enum
@@ -20,7 +20,7 @@ type
 proc isWhitespace*(c: char): bool {.inline.} =
   c == ' '
 
-proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
+proc parse*(parser: HTMLParser, input: string): HTMLElement =
   var
     lastParent = newHTMLElement("root", "", @[], @[])
     tagName: string = ""
@@ -58,18 +58,20 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
           parser.state = psComment
           continue
       parser.state = psStartTag
+
     elif parser.state == psStartTag:
       if c == '/':
-        parser.state = HTMLParserState.psBeginClosingTag
+        parser.state = psBeginClosingTag
       else:
-        parser.state = HTMLParserState.psReadingTag
+        parser.state = psReadingTag
         tagName = tagName & c
+
     elif parser.state == psReadingTag:
       if isWhitespace(c):
-        parser.state = HTMLParserState.psReadingAttributes
+        parser.state = psReadingAttributes
       elif c == '>':
         # We are now ending the parsing, this element is either fully constructed or malformed.
-        parser.state = HTMLParserState.psEndTag
+        parser.state = psEndTag
         
         # Construct the new element itself.
         var parent = newHTMLElement(tagName, "", attributes, @[])
@@ -81,8 +83,10 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
         parser.state = psReadingAttributes
       else:
         tagName = tagName & c
+
     elif parser.state == psReadingAttributes:
       if c == '>':
+        # This is the last attribute.
         currentAttrRawValueDone = true
         currentAttrNameDone = true
         parser.state = psEndTag
@@ -96,27 +100,36 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
         # Parse attribute name
         if not currentAttrNameDone:
           if c == '=':
+            # We've parsed the attribute name, moving on to the attribute value
             currentAttrNameDone = true
+            echo currentAttrName
             continue
 
           currentAttrName = currentAttrName & c
         else:
           # Parse attribute value
           if not currentAttrRawValueDone:
-            if not isWhitespace(c) and c != '<':
+            if not isWhitespace(c) and c != '>':
               currentAttrRawValue = currentAttrRawValue & c
             else:
-              currentAttrRawValueDone = true
+              echo "no more value parsing"
+              if isWhitespace(c):
+                currentAttrRawValueDone = true
 
-              echo currentAttrName
-              echo currentAttrRawValue
-              var bVal = newButterfly("s[" & currentAttrRawValue & "]")
-              attributes.add(newAttribute(
-                currentAttrName, bVal
-              ))
-              currentAttrName.reset()
-              currentAttrRawValue.reset()
-
+                echo currentAttrName
+                echo currentAttrRawValue
+                var bVal = newButterfly("s[" & currentAttrRawValue & "]")
+                attributes.add(newAttribute(
+                  currentAttrName, bVal
+                ))
+                
+                # Move onto the next attribute or end parsing attributes
+                currentAttrName.reset()
+                currentAttrRawValue.reset()
+              else:
+                if c == '>':
+                  # No more attribute parsing, just move onto the text content
+                  parser.state = psEndTag
     elif parser.state == psEndTag:
       lastParent.textContent = lastParent.textContent & c
       tagName.reset()
@@ -126,7 +139,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement {.inline.} =
 
   lastParent
 
-proc parseToDocument*(parser: HTMLParser, input: string): Document {.inline.} =
+proc parseToDocument*(parser: HTMLParser, input: string): HTMLDocument {.inline.} =
   newDocument(parser.parse(input))
 
 proc newHTMLParser*: HTMLParser {.inline.} =
