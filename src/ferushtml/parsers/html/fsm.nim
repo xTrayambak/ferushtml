@@ -2,7 +2,8 @@
   Finite state machine based HTML parser
 ]#
 
-import element, document, attribute, butterfly, std/strformat
+import element, document, attribute, butterfly, 
+      std/[strutils, strformat]
 
 type 
   HTMLParserState* = enum
@@ -27,9 +28,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
     tagName: string = ""
 
     currentAttrName: string
-    currentAttrNameDone: bool = false
     currentAttrRawValue: string
-    currentAttrRawValueDone: bool = false
 
     attributes: seq[Attribute]
 
@@ -51,13 +50,14 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
     if c == '<':
       # Code to handle comments. They're just discarded by the parser.
-      if index + 1 < input.len and index + 2 < input.len and index + 3 < input.len:
+      if index + 3 < input.len:
         if input[index + 1] == '!' and 
           input[index + 2] == '-' and 
           input[index + 3] == '-':
           # Comment detected!
           parser.state = psComment
           continue
+      # TODO(xTrayambak): DOCTYPE ignoring support
       parser.state = psStartTag
     elif parser.state == psStartTag:
       if c == '/':
@@ -81,10 +81,25 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
       else:
         tagName = tagName & c
     elif parser.state == psReadingAttributeName:
+      if c != '=':
+        currentAttrName = currentAttrName & c
+      else:
+          if currentAttrName.len < 1:
+            raise newException(
+              ValueError, 
+              fmt"At char {index}: expected inline attribute name, got '=' instead"
+            )
+          
+          parser.state = psReadingAttributeValue
+          continue
+    elif parser.state == psReadingAttributeValue:
       if c == '>':
-        # This is the last attribute.
-        currentAttrRawValueDone = true
-        currentAttrNameDone = true
+        when defined(ferusHtmlExperimentalErrors):
+          if currentAttrRawValue.len < 1:
+            raise newException(
+              ValueError, 
+              fmt"At char {index}: Tag attribute value section abruptly ended by trailing character '>'"
+            )
 
         attributes.add(
           newAttribute(
@@ -95,49 +110,48 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
         currentAttrName.reset()
         currentAttrRawValue.reset()
-
+      
         parser.state = psEndTag
 
         var parent = newHTMLElement(tagName, "", attributes, @[])
         parent.parent = lastParent
-
         lastParent.push(parent)
         lastParent = parent
         attributes.reset()
+        continue
       else:
-        # Parse attribute name
-        if not currentAttrNameDone:
-          if c == '=':
-            # We've parsed the attribute name, moving on to the attribute value
-            currentAttrNameDone = true
-            continue
+        #echo c
+        #[
+          Ignore       Real
+          this         end
+          |            |
+          V            V
+          "blahblahblah"
+          ^            ^
+          |            |
+          length       length } hence we can infer that the 
+          is 0         is 12  } value is probably complete
+        ]#
+        if c != '"':
+          currentAttrRawValue = currentAttrRawValue & c
+        elif c == '"' and currentAttrRawValue.len > 1:
+          attributes.add(
+            newAttribute(
+              currentAttrName,
+              newButterfly(fmt"s[{currentAttrRawValue}]")
+            ) 
+          )
 
-          currentAttrName = currentAttrName & c
-        else:
-          # Parse attribute value
-          if not currentAttrRawValueDone:
-            if not isWhitespace(c) and c != '>':
-              currentAttrRawValue = currentAttrRawValue & c
-            else:
-              if isWhitespace(c):
-                currentAttrRawValueDone = true
-
-                var bVal = newButterfly("s[" & currentAttrRawValue & "]")
-                attributes.add(newAttribute(
-                  currentAttrName, bVal
-                ))
-                
-                # Move onto the next attribute or end parsing attributes
-                currentAttrName.reset()
-                currentAttrRawValue.reset()
-                attributes.reset()
-              else:
-                if c == '>':
-                  # No more attribute parsing, just move onto the text content
-                  parser.state = psEndTag
+          if input[index + 1] in Whitespace:
+            parser.state = psReadingAttributeName
+          else:
+            parser.state = psEndTag
+          currentAttrName.reset()
+          currentAttrRawValue.reset()
     elif parser.state == psEndTag:
-      lastParent.textContent = lastParent.textContent & c
-      tagName.reset()
+      if c != '>':
+        lastParent.textContent = lastParent.textContent & c
+        tagName.reset()
     elif parser.state == psBeginClosingTag:
       if c == '>':
         lastParent = lastParent.parent
