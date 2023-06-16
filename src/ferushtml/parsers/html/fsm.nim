@@ -72,7 +72,6 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
       elif c == '>':
         # We are now ending the parsing, this element is either fully constructed or malformed.
         parser.state = psEndTag
-        echo "after reading tag name"
         
         # Construct the new element itself.
         var parent = newHTMLElement(tagName, "", attributes, @[])
@@ -114,12 +113,10 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
       
         parser.state = psEndTag
 
-        echo "after attr name done"
         var parent = newHTMLElement(tagName, "", attributes, @[])
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
-        echo "nil? " & $lastParent.isNil
         attributes.reset()
         continue
       else:
@@ -147,7 +144,6 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
           if input[index + 1] in Whitespace:
             parser.state = psReadingAttributeName
           else:
-            echo "after raw value done"
             var parent = newHTMLElement(tagName, "", attributes, @[])
             parent.parent = lastParent
             lastParent.push(parent)
@@ -159,7 +155,6 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
           continue
     elif parser.state == psEndTag:
       if c != '>':
-        echo lastParent.isNil
         lastParent.textContent = lastParent.textContent & c
         tagName.reset()
     elif parser.state == psBeginClosingTag:
