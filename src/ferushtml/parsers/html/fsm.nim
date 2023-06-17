@@ -72,12 +72,13 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
       elif c == '>':
         # We are now ending the parsing, this element is either fully constructed or malformed.
         parser.state = psEndTag
-        
+
         # Construct the new element itself.
         var parent = newHTMLElement(tagName, "", attributes, @[])
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
+        tagName.reset()
       else:
         tagName = tagName & c
     elif parser.state == psReadingAttributeName:
