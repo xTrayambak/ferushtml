@@ -74,7 +74,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
         parser.state = psEndTag
 
         # Construct the new element itself.
-        var parent = newHTMLElement(tagName, "", attributes, @[])
+        var parent = newHTMLElement(tagName.toLowerAscii(), "", attributes, @[])
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
@@ -104,7 +104,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
 
         attributes.add(
           newAttribute(
-            currentAttrName,
+            currentAttrName.toLowerAscii(),
             newButterfly(fmt"s[{currentAttrRawValue}]")
           )
         )
@@ -114,7 +114,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
       
         parser.state = psEndTag
 
-        var parent = newHTMLElement(tagName, "", attributes, @[])
+        var parent = newHTMLElement(tagName.toLowerAscii(), "", attributes, @[])
         parent.parent = lastParent
         lastParent.push(parent)
         lastParent = parent
@@ -137,7 +137,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
         elif c == '"' and currentAttrRawValue.len > 1:
           attributes.add(
             newAttribute(
-              currentAttrName,
+              currentAttrName.toLowerAscii(),
               newButterfly(fmt"s[{currentAttrRawValue}]")
             ) 
           )
@@ -145,7 +145,7 @@ proc parse*(parser: HTMLParser, input: string): HTMLElement =
           if input[index + 1] in Whitespace:
             parser.state = psReadingAttributeName
           else:
-            var parent = newHTMLElement(tagName, "", attributes, @[])
+            var parent = newHTMLElement(tagName.toLowerAscii(), "", attributes, @[])
             parent.parent = lastParent
             lastParent.push(parent)
             lastParent = parent

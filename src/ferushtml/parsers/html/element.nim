@@ -4,6 +4,7 @@
 import attribute
 
 type
+  HTMLAttributeNotFoundDefect* = Defect
   HTMLElementType* = enum
     etNode, etText, etComment
 
@@ -17,10 +18,20 @@ type
 #[
   Get all the attributes of this node
   eg.
-  <body background="green"> results in {"background": Butterfly(payload: "s[green]")}
+  <body background="green"> results in Attribute(name: "background", value: Butterfly(payload: "s[green]"))
 ]#
 proc getAttrs*(htmlElement: HTMLElement): seq[Attribute] {.inline.} =
   htmlElement.attributes
+
+#[
+  Get an attribute of this node by its name, or get an exception instead.
+]#
+proc getAttrByName*(htmlElement: HTMLElement, name: string): Attribute {.raises: [HTMLAttributeNotFoundDefect], inline.} =
+  for attr in htmlElement.attributes:
+    if attr.name == name:
+      return attr
+
+  raise newException(HTMLAttributeNotFoundDefect, "Could not find attribute '" & name & "'")
 
 #[
   Find a child by it's tag, returns the first occurence of said tag.
